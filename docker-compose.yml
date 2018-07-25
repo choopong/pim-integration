@@ -1,0 +1,50 @@
+version: '2'
+
+services:
+  mysql:
+    image: docker.io/mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: akeneo_pim
+      MYSQL_PASSWORD: akeneo_pim
+      MYSQL_DATABASE: akeneo_pim
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql-data:/var/lib/mysql/
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.5.3
+    environment:
+      ES_JAVA_OPTS: '-Xms512m -Xmx512m'
+      discovery.type: 'single-node'
+    ports:
+      - '9200:9200'
+
+  fpm:
+    image: docker.io/choopong/akeneo:2.3
+    depends_on:
+      - mysql
+    working_dir: /app/akeneo/
+    volumes:
+      - ./akeneo/app/config/parameters.yml:/app/akeneo/app/config/parameters.yml:ro
+      - ./akeneo/app/config/pim_parameters.yml:/app/akeneo/app/config/pim_parameters.yml:ro
+    # TODO map volume for shared instance such as session
+    entrypoint: /bin/bash -c
+    command: ["bin/console --env=prod cache:clear && script/akeneo-es-reset.exp && chmod -R 777 var/ && /usr/local/bin/entrypoint.sh sudo php-fpm7.1 -F"]
+  # bin/console --env=prod akeneo:elasticsearch:reset-indexes 
+
+  httpd:
+    image: docker.io/httpd:2.4
+    depends_on:
+      - fpm
+    ports:
+      - '80:80'
+    volumes:
+      - ./apache2/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
+      - ./apache2/conf/vhost.conf:/usr/local/apache2/conf/vhost.conf:ro
+    volumes_from:
+      - fpm
+    
+volumes:
+  mysql-data:
