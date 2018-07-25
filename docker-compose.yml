@@ -32,7 +32,6 @@ services:
     # TODO map volume for shared instance such as session
     entrypoint: /bin/bash -c
     command: ["bin/console --env=prod cache:clear && script/akeneo-es-reset.exp && chmod -R 777 var/ && /usr/local/bin/entrypoint.sh sudo php-fpm7.1 -F"]
-  # bin/console --env=prod akeneo:elasticsearch:reset-indexes 
 
   httpd:
     image: docker.io/httpd:2.4
