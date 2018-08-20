@@ -31,7 +31,7 @@ services:
       - ./akeneo/app/config/pim_parameters.yml:/app/akeneo/app/config/pim_parameters.yml:ro
     # TODO map volume for shared instance such as session
     entrypoint: /bin/bash -c
-    command: ["bin/console --env=prod cache:clear && script/akeneo-es-reset.exp && chmod -R 777 var/ && /usr/local/bin/entrypoint.sh sudo php-fpm7.1 -F"]
+    command: ["bin/console --env=prod cache:clear && script/akeneo-es-reset.exp && bin/console --env=prod pim:product-model:index --all && bin/console --env=prod pim:product:index --all && chmod -R 777 var/ && mkdir web/media/ && chmod -R 777 web/media/ && /usr/local/bin/entrypoint.sh sudo php-fpm7.1 -F"]
 
   httpd:
     image: docker.io/httpd:2.4
