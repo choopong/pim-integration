@@ -20,8 +20,8 @@ parameters:
     archive_dir:          '%kernel.root_dir%/archive'
     logs_dir:             '%kernel.logs_dir%'
     catalog_storage_dir:  '%kernel.root_dir%/file_storage/catalog'
-    tmp_storage_dir:      '%kernel.root_dir%/../var/tmp/pim/file_storage'
-    upload_tmp_dir:       '%kernel.root_dir%/../var/tmp/pim/upload_tmp_dir'
+    tmp_storage_dir:      '/app/akeneo/var/tmp/pim/file_storage'
+    upload_tmp_dir:       '/app/akeneo/var/tmp/pim/upload_tmp_dir'
 
     # You can use installer_data to install an outside catalog (like one from akeneo/catalogs)
     # installer_data: %kernel.root_dir%/../vendor/akeneo/catalogs/master/community/small/fixtures
