@@ -1,6 +1,13 @@
 version: '2'
 
 services:
+  kafka:
+    image: docker.io/choopong/kafka:1.1.x.1
+    ports:
+      - '9092:9092'
+    volumes:
+      - ./kafka/config/server.properties:/app/kafka/config/server.properties
+      - ./kafka-logs/:/tmp/kafka-logs/
   mysql:
     image: docker.io/mysql:5.7
     environment:
@@ -21,8 +28,8 @@ services:
     ports:
       - '9200:9200'
 
-  fpm:
-    image: docker.io/choopong/akeneo:2.3
+  akeneo:
+    image: docker.io/choopong/akeneo:2.3.x.1
     depends_on:
       - mysql
     working_dir: /app/akeneo/
@@ -30,24 +37,27 @@ services:
       - ./akeneo/app/config/parameters.yml:/app/akeneo/app/config/parameters.yml:ro
       - ./akeneo/app/config/pim_parameters.yml:/app/akeneo/app/config/pim_parameters.yml:ro
       - akeneo-web-data:/app/akeneo/web
+      - akeneo-vendor-data:/app/akeneo/vendor
       - akeneo-var-data:/app/akeneo/var
     # TODO map volume for shared instance such as session
-    entrypoint: /bin/bash -c
+    entrypoint: ["/bin/bash","-c"]
     command: ["bin/console --env=prod cache:clear && script/akeneo-es-reset.exp && bin/console --env=prod pim:product-model:index --all && bin/console --env=prod pim:product:index --all && chmod -R 777 var/ && [ -d  web/media/ ] || mkdir web/media/ && chmod -R 777 web/media/ && /usr/local/bin/entrypoint.sh sudo php-fpm7.1 -F"]
 
   httpd:
     image: docker.io/httpd:2.4
     depends_on:
-      - fpm
+      - akeneo
     ports:
       - '80:80'
     volumes:
       - ./apache2/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
       - ./apache2/conf/vhost.conf:/usr/local/apache2/conf/vhost.conf:ro
     volumes_from:
-      - fpm
+      - akeneo
     
 volumes:
   mysql-data:
   akeneo-web-data:
+  akeneo-vendor-data:
   akeneo-var-data:
+  kafka-logs-data:
